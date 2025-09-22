@@ -10,9 +10,9 @@ $adminPass = 'Password123!'; // change immediately
 $pdo = DB::getInstance();
 
 $hash = password_hash($adminPass, PASSWORD_DEFAULT);
-$stmt = $pdo->prepare("INSERT INTO users (email, password_hash, name, role) VALUES (:email, :ph, :name, 'admin')");
+$stmt = $pdo->prepare("INSERT INTO users (username, email, password_hash, role) VALUES (:username, :email, :ph, 'admin')");
 try {
-    $stmt->execute([':email' => $adminEmail, ':ph' => $hash, ':name' => 'Admin']);
+    $stmt->execute([':username' => 'admin', ':email' => $adminEmail, ':ph' => $hash]);
     echo "Admin created: {$adminEmail}\n";
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage() . "\n";
