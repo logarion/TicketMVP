@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => '__root__',
-        'pretty_version' => '1.0.0+no-version-set',
-        'version' => '1.0.0.0',
-        'reference' => null,
+        'pretty_version' => 'dev-TicketMVP',
+        'version' => 'dev-TicketMVP',
+        'reference' => 'a2aac1b38e68202ed4ccee32d43f75717d34c71a',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         '__root__' => array(
-            'pretty_version' => '1.0.0+no-version-set',
-            'version' => '1.0.0.0',
-            'reference' => null,
+            'pretty_version' => 'dev-TicketMVP',
+            'version' => 'dev-TicketMVP',
+            'reference' => 'a2aac1b38e68202ed4ccee32d43f75717d34c71a',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

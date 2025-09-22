@@ -3,11 +3,11 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Update credentials to your MySQL
-define('DB_HOST','127.0.0.1');
-define('DB_NAME','ticket_mvp');
-define('DB_USER','LDX');
-define('DB_PASS','6_*aMrCo13{B');
+// Use Replit PostgreSQL database credentials from environment
+define('DB_HOST', $_ENV['PGHOST'] ?? 'helium');
+define('DB_NAME', $_ENV['PGDATABASE'] ?? 'heliumdb'); 
+define('DB_USER', $_ENV['PGUSER'] ?? 'postgres');
+define('DB_PASS', $_ENV['PGPASSWORD'] ?? 'password');
 
 // --- Email (Office365) ---
 define('SMTP_HOST', 'smtp.office365.com');
@@ -32,7 +32,7 @@ if (!is_dir(UPLOAD_DIR)) {
 
 
 try {
-  $pdo = new PDO("mysql:host=".DB_HOST.";dbname=".DB_NAME.";charset=utf8mb4", DB_USER, DB_PASS, [
+  $pdo = new PDO("pgsql:host=".DB_HOST.";dbname=".DB_NAME, DB_USER, DB_PASS, [
     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
   ]);
