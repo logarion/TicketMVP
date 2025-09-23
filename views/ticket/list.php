@@ -39,13 +39,25 @@ $h = fn($v) => htmlspecialchars((string)$v ?? '');
       <!-- existing page content starts here -->
 
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h3>Tickets</h3>
-  <a class="btn btn-primary" href="index.php?page=ticket_create">New Ticket</a>
+<!-- Page Header -->
+<div class="page-header">
+  <div class="d-flex justify-content-between align-items-center">
+    <div>
+      <h1 class="page-title">
+        <i class="fas fa-ticket-alt me-3"></i>Tickets
+      </h1>
+      <p class="page-subtitle">Manage and track support tickets</p>
+    </div>
+    <a class="btn btn-primary btn-lg" href="index.php?page=ticket_create">
+      <i class="fas fa-plus me-2"></i>New Ticket
+    </a>
+  </div>
 </div>
 
 <!-- Filters / Search -->
-<form class="row g-2 mb-3" method="get" action="index.php">
+<div class="filter-section">
+  <h5 class="mb-3"><i class="fas fa-filter me-2"></i>Filter & Search</h5>
+  <form class="row g-3" method="get" action="index.php">
   <input type="hidden" name="page" value="tickets_list">
 
   <div class="col-lg-4 col-md-6">
@@ -106,61 +118,198 @@ $h = fn($v) => htmlspecialchars((string)$v ?? '');
   </div>
 
   <div class="col-md-2">
-    <button class="btn btn-outline-secondary w-100">Apply</button>
+    <button class="btn btn-outline-secondary w-100">
+      <i class="fas fa-search me-1"></i>Apply
+    </button>
   </div>
-</form>
+  </form>
+</div>
 
 <?php if (empty($tickets)): ?>
-  <div class="alert alert-info">No tickets found.</div>
+  <div class="card text-center p-5">
+    <div class="card-body">
+      <i class="fas fa-search fa-3x text-muted mb-3"></i>
+      <h5 class="card-title">No tickets found</h5>
+      <p class="card-text text-muted">Try adjusting your search criteria or create a new ticket.</p>
+      <a href="index.php?page=ticket_create" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Create New Ticket
+      </a>
+    </div>
+  </div>
 <?php else: ?>
-  <div class="table-responsive">
-    <table class="table table-striped align-middle">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Title</th>
-          <th>Priority</th>
-          <th>Status</th>
-          <th>Created By</th>
-          <th>Requester</th>
-          <th>Assigned To</th>
-          <th>Department</th>
-          <th>Created</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-      <?php foreach ($tickets as $t): ?>
-        <tr>
-          <td><?= (int)$t['id'] ?></td>
-          <td><a href="index.php?page=ticket_view&id=<?= (int)$t['id'] ?>"><?= $h($t['title']) ?></a></td>
-          <td><span class="badge <?= ($t['priority']==='Urgent'?'bg-danger':'bg-secondary') ?>"><?= $h($t['priority'] ?? 'Normal') ?></span></td>
-          <td>  <?php $s = $t['status'] ?? 'New'; ?>
-  <span class="badge
-    <?= $s==='Closed' ? 'bg-dark' :
-       ($s==='Resolved' ? 'bg-success' :
-       ($s==='In Progress' ? 'bg-info' : 'bg-secondary')) ?>">
-    <?= $h($s) ?>
-  </span></td>
-          <td><?= $h($t['username'] ?? '') ?></td>
-          <td>
-            <?php if (!empty($t['requester_username'])): ?>
-              <?= $h($t['requester_username']) ?>
-              <small class="text-muted">(<?= $h($t['requester_email'] ?? $t['requester_user_email'] ?? '') ?>)</small>
-            <?php else: ?>
-              <?= $h($t['requester_email'] ?? '—') ?>
-            <?php endif; ?>
-          </td>
-          <td><?= $h($t['assigned_username'] ?? 'Unassigned') ?></td>
-          <td><?= $h($t['department_name'] ?? '') ?></td>
-          <td><?= $h($t['created_at'] ?? '') ?></td>
-          <td>
-            <a class="btn btn-sm btn-outline-primary" href="index.php?page=ticket_view&id=<?= (int)$t['id'] ?>">View</a>
-          </td>
-        </tr>
-      <?php endforeach; ?>
-      </tbody>
-    </table>
+  <!-- Tickets Count & Summary -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="mb-0">
+      <i class="fas fa-list me-2"></i>
+      Showing <?= count($tickets) ?> of <?= $total ?> tickets
+    </h5>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary btn-sm" id="card-view" onclick="toggleView('card')">
+        <i class="fas fa-th-large me-1"></i>Cards
+      </button>
+      <button class="btn btn-outline-secondary btn-sm" id="table-view" onclick="toggleView('table')">
+        <i class="fas fa-table me-1"></i>Table
+      </button>
+    </div>
+  </div>
+
+  <!-- Card View -->
+  <div id="tickets-cards" class="row">
+    <?php foreach ($tickets as $t): ?>
+      <div class="col-lg-6 col-xl-4 mb-4">
+        <div class="ticket-card fade-in">
+          <div class="ticket-card-header">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <div class="ticket-title">
+                  <a href="index.php?page=ticket_view&id=<?= (int)$t['id'] ?>" class="text-decoration-none">
+                    <?= $h($t['title']) ?>
+                  </a>
+                </div>
+                <div class="ticket-meta">
+                  <span class="me-3">
+                    <i class="fas fa-hashtag me-1"></i>#<?= (int)$t['id'] ?>
+                  </span>
+                  <span class="me-3">
+                    <i class="fas fa-calendar me-1"></i>
+                    <?php 
+                      $created = $t['created_at'] ?? '';
+                      if (!empty($created)) {
+                        $ts = strtotime($created);
+                        echo $ts ? date('M j, Y', $ts) : '—';
+                      } else {
+                        echo '—';
+                      }
+                    ?>
+                  </span>
+                </div>
+              </div>
+              <div class="d-flex flex-column gap-1 align-items-end">
+                <?php $s = $t['status'] ?? 'New'; ?>
+                <span class="badge
+                  <?= $s==='Closed' ? 'bg-dark' :
+                     ($s==='Resolved' ? 'bg-success' :
+                     ($s==='In Progress' ? 'bg-warning' : 'bg-secondary')) ?>">
+                  <?= $h($s) ?>
+                </span>
+                <span class="badge <?= ($t['priority']==='Urgent'?'bg-danger':'bg-info') ?>">
+                  <?= $h($t['priority'] ?? 'Normal') ?>
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <div class="row g-2">
+              <div class="col-6">
+                <small class="text-muted d-block">Created by</small>
+                <span class="fw-medium">
+                  <i class="fas fa-user me-1"></i><?= $h($t['username'] ?? 'Unknown') ?>
+                </span>
+              </div>
+              <div class="col-6">
+                <small class="text-muted d-block">Assigned to</small>
+                <span class="fw-medium">
+                  <i class="fas fa-user-tag me-1"></i><?= $h($t['assigned_username'] ?? 'Unassigned') ?>
+                </span>
+              </div>
+              <div class="col-6">
+                <small class="text-muted d-block">Requester</small>
+                <span class="fw-medium">
+                  <i class="fas fa-envelope me-1"></i>
+                  <?php if (!empty($t['requester_username'])): ?>
+                    <?= $h($t['requester_username']) ?>
+                  <?php else: ?>
+                    <?= $h($t['requester_email'] ?? 'Not set') ?>
+                  <?php endif; ?>
+                </span>
+              </div>
+              <div class="col-6">
+                <small class="text-muted d-block">Department</small>
+                <span class="fw-medium">
+                  <i class="fas fa-building me-1"></i><?= $h($t['department_name'] ?? 'No department') ?>
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="d-flex justify-content-between align-items-center">
+            <a href="index.php?page=ticket_view&id=<?= (int)$t['id'] ?>" class="btn btn-primary btn-sm">
+              <i class="fas fa-eye me-1"></i>View Details
+            </a>
+            <div class="dropdown">
+              <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-ellipsis-h"></i>
+              </button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="index.php?page=ticket_edit&id=<?= (int)$t['id'] ?>">
+                  <i class="fas fa-edit me-2"></i>Edit
+                </a></li>
+                <li><a class="dropdown-item" href="index.php?page=project_from_ticket&ticket_id=<?= (int)$t['id'] ?>">
+                  <i class="fas fa-project-diagram me-2"></i>Create Project
+                </a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    <?php endforeach; ?>
+  </div>
+
+  <!-- Table View (Hidden by default) -->
+  <div id="tickets-table" class="d-none">
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Created By</th>
+            <th>Assigned To</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($tickets as $t): ?>
+          <tr>
+            <td><?= (int)$t['id'] ?></td>
+            <td><a href="index.php?page=ticket_view&id=<?= (int)$t['id'] ?>"><?= $h($t['title']) ?></a></td>
+            <td><span class="badge <?= ($t['priority']==='Urgent'?'bg-danger':'bg-info') ?>"><?= $h($t['priority'] ?? 'Normal') ?></span></td>
+            <td>
+              <?php $s = $t['status'] ?? 'New'; ?>
+              <span class="badge
+                <?= $s==='Closed' ? 'bg-dark' :
+                   ($s==='Resolved' ? 'bg-success' :
+                   ($s==='In Progress' ? 'bg-warning' : 'bg-secondary')) ?>">
+                <?= $h($s) ?>
+              </span>
+            </td>
+            <td><?= $h($t['username'] ?? '') ?></td>
+            <td><?= $h($t['assigned_username'] ?? 'Unassigned') ?></td>
+            <td>
+              <?php 
+                $created = $t['created_at'] ?? '';
+                if (!empty($created)) {
+                  $ts = strtotime($created);
+                  echo $ts ? date('M j, Y', $ts) : '—';
+                } else {
+                  echo '—';
+                }
+              ?>
+            </td>
+            <td>
+              <a class="btn btn-sm btn-outline-primary" href="index.php?page=ticket_view&id=<?= (int)$t['id'] ?>">
+                <i class="fas fa-eye me-1"></i>View
+              </a>
+            </td>
+          </tr>
+        <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <?php
